@@ -1,0 +1,30 @@
+replicaCount: 1
+
+service:
+  name: urbex-service
+  image: urbex-service
+  port: 443
+  labels:
+    component: backend
+    tier: api
+
+frontend:
+  name: urbex-ui
+  image: urbex-ui
+  port: 443
+  labels:
+    component: frontend
+    tier: ui
+
+ingress:
+  enabled: true
+  annotations: {}
+  hosts:
+    - host: urbexcrawler.home.codesty.dev
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - urbexcrawler.home.codesty.dev
+      secretName: urbexcrawler-tls
