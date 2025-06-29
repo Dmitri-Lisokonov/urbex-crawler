@@ -16,7 +16,6 @@ COPY ["Urbex.Service.ApiClient/Urbex.Service.ApiClient.csproj", "Urbex.Service.A
 COPY ["Urbex.Service.Application/Urbex.Service.Application.csproj", "Urbex.Service.Application/"]
 COPY ["Urbex.Service.Domain/Urbex.Service.Domain.csproj", "Urbex.Service.Domain/"]
 COPY ["Urbex.Service.Dto/Urbex.Service.Dto.csproj", "Urbex.Service.Dto/"]
-COPY ["Urbex.Service.Enums/Urbex.Service.Enums.csproj", "Urbex.Service.Enums/"]
 COPY ["Urbex.Service.Persistence/Urbex.Service.Persistence.csproj", "Urbex.Service.Persistence/"]
 
 RUN dotnet restore "Urbex.Service.Api/Urbex.Service.Api.csproj"

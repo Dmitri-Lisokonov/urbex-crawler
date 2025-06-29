@@ -10,40 +10,24 @@ public class LocationController : ControllerBase
 {
     private static readonly HttpClient HttpClient = new();
 
-    [HttpGet]
-    [Route("random")]
-    public async Task<IActionResult> GetRandomLocation()
+    private const string OverpassUrl = "https://overpass-api.de/api/interpreter";
+    private const string BoundingBox = "(51.1095,4.3669,52.0105,5.8131)";
+
+    public record LocationRequest(Dictionary<string, string[]>? Filters);
+
+    [HttpPost("random")]
+    public async Task<IActionResult> PostRandomLocation([FromBody] LocationRequest request)
     {
-        const string overpassUrl = "https://overpass-api.de/api/interpreter";
-
-        var query = """
-                    [out:json][timeout:60];
-                    (
-                      node["historic"="ruins"](51.1095,4.3669,52.0105,5.8131);
-                      node["historic"="castle"](51.1095,4.3669,52.0105,5.8131);
-                      node["historic"="archaeological_site"](51.1095,4.3669,52.0105,5.8131);
-                      node["historic"="fort"](51.1095,4.3669,52.0105,5.8131);
-                      node["abandoned"="yes"](51.1095,4.3669,52.0105,5.8131);
-                      node["natural"="cave_entrance"](51.1095,4.3669,52.0105,5.8131);
-                      node["natural"="spring"](51.1095,4.3669,52.0105,5.8131);
-                      node["natural"="rock"](51.1095,4.3669,52.0105,5.8131);
-                      node["natural"="cliff"](51.1095,4.3669,52.0105,5.8131);
-                      node["natural"="sinkhole"](51.1095,4.3669,52.0105,5.8131);
-                      node["natural"="wood"](51.1095,4.3669,52.0105,5.8131);
-                      node["landuse"="forest"](51.1095,4.3669,52.0105,5.8131);
-                      node["tourism"="viewpoint"](51.1095,4.3669,52.0105,5.8131);
-                      node["man_made"="bunker"](51.1095,4.3669,52.0105,5.8131);
-                      node["man_made"="tower"]["tower:type"="observation"](51.1095,4.3669,52.0105,5.8131);
-                      node["tourism"="wilderness_hut"](51.1095,4.3669,52.0105,5.8131);
-                      node["tourism"="alpine_hut"](51.1095,4.3669,52.0105,5.8131);
-                      node["leisure"="picnic_site"](51.1095,4.3669,52.0105,5.8131);
-                      node["highway"="trailhead"](51.1095,4.3669,52.0105,5.8131);
-                      node["highway"="path"]["sac_scale"="demanding_mountain_hiking"](51.1095,4.3669,52.0105,5.8131);
-                    );
-                    out body;
-                    """;
-
-        var response = await HttpClient.PostAsync(overpassUrl, new StringContent(query));
+        var filterLines = BuildOverpassQuery(request.Filters);
+        var query = $"""
+                     [out:json][timeout:60];
+                     (
+                       {filterLines}
+                     );
+                     out body;
+                     """;
+        Console.WriteLine("Generated Overpass Query:\n" + query); // Debug output
+        var response = await HttpClient.PostAsync(OverpassUrl, new StringContent(query));
         if (!response.IsSuccessStatusCode)
             return StatusCode((int)response.StatusCode, "Overpass API error");
 
@@ -61,9 +45,62 @@ public class LocationController : ControllerBase
         if (lat == null || lon == null)
             return BadRequest("Invalid location data");
 
-        var googleMapsUrl =
-            $"https://www.google.com/maps?q={lat.Value.ToString(CultureInfo.InvariantCulture)},{lon.Value.ToString(CultureInfo.InvariantCulture)}";
-
+        var googleMapsUrl = $"https://www.google.com/maps?q={lat.Value.ToString(CultureInfo.InvariantCulture)},{lon.Value.ToString(CultureInfo.InvariantCulture)}";
         return Ok(new { url = googleMapsUrl });
     }
+
+    private static string BuildOverpassQuery(Dictionary<string, string[]>? filters)
+    {
+        if (filters == null || filters.Count == 0)
+        {
+            return string.Join(Environment.NewLine, DefaultFilters.Select(f => $"node{f}{BoundingBox};"));
+        }
+
+        var lines = new List<string>();
+
+        foreach (var (key, values) in filters)
+        {
+            foreach (var value in values)
+            {
+                if (key == "man_made" && value == "tower")
+                {
+                    lines.Add($"node[\"man_made\"=\"tower\"][\"tower:type\"=\"observation\"]{BoundingBox};");
+                }
+                else if (key == "highway" && value == "path")
+                {
+                    lines.Add($"node[\"highway\"=\"path\"][\"sac_scale\"=\"demanding_mountain_hiking\"]{BoundingBox};");
+                }
+                else
+                {
+                    lines.Add($"node[\"{key}\"=\"{value}\"]{BoundingBox};");
+                }
+            }
+        }
+
+        return string.Join(Environment.NewLine, lines);
+    }
+
+    private static readonly string[] DefaultFilters =
+    [
+        "[\"historic\"=\"ruins\"]",
+        "[\"historic\"=\"castle\"]",
+        "[\"historic\"=\"archaeological_site\"]",
+        "[\"historic\"=\"fort\"]",
+        "[\"abandoned\"=\"yes\"]",
+        "[\"natural\"=\"cave_entrance\"]",
+        "[\"natural\"=\"spring\"]",
+        "[\"natural\"=\"rock\"]",
+        "[\"natural\"=\"cliff\"]",
+        "[\"natural\"=\"sinkhole\"]",
+        "[\"natural\"=\"wood\"]",
+        "[\"landuse\"=\"forest\"]",
+        "[\"tourism\"=\"viewpoint\"]",
+        "[\"man_made\"=\"bunker\"]",
+        "[\"man_made\"=\"tower\"][\"tower:type\"=\"observation\"]",
+        "[\"tourism\"=\"wilderness_hut\"]",
+        "[\"tourism\"=\"alpine_hut\"]",
+        "[\"leisure\"=\"picnic_site\"]",
+        "[\"highway\"=\"trailhead\"]",
+        "[\"highway\"=\"path\"][\"sac_scale\"=\"demanding_mountain_hiking\"]"
+    ];
 }
