@@ -1,3 +1,6 @@
+Here is your corrected Helm deployment template with the missing `app` label explicitly added to the `template.metadata.labels` section in both deployments:
+
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,6 +18,7 @@ spec:
   template:
     metadata:
       labels:
+        app: {{ .Values.service.name }}
         {{- include "urbex.labels" . | nindent 8 }}
         {{- with .Values.service.labels }}
         {{ include "urbex.quotedLabels" . | nindent 8 }}
@@ -46,6 +50,7 @@ spec:
   template:
     metadata:
       labels:
+        app: {{ .Values.frontend.name }}
         {{- include "urbex.labels" . | nindent 8 }}
         {{- with .Values.frontend.labels }}
         {{ include "urbex.quotedLabels" . | nindent 8 }}
@@ -59,3 +64,4 @@ spec:
           image: {{ .Values.frontend.image }}
           ports:
             - containerPort: {{ .Values.frontend.port }}
+```
