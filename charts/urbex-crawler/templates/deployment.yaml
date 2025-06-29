@@ -27,6 +27,7 @@ spec:
       containers:
         - name: {{ .Values.service.name }}
           image: {{ .Values.service.image }}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: {{ .Values.service.port }}
 ---
@@ -59,5 +60,6 @@ spec:
       containers:
         - name: {{ .Values.frontend.name }}
           image: {{ .Values.frontend.image }}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: {{ .Values.frontend.port }}
