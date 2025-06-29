@@ -23,3 +23,12 @@ Pod-specific labels.
 app.kubernetes.io/component: {{ .Values.component | quote }}
 app.kubernetes.io/part-of: "urbex-crawler"
 {{- end }}
+
+{{/*
+Stringify and render a map as YAML key: "value" pairs (for metadata.labels)
+*/}}
+{{- define "urbex.quotedLabels" -}}
+{{- range $k, $v := . }}
+{{ $k }}: {{ $v | quote }}
+{{- end }}
+{{- end }}
