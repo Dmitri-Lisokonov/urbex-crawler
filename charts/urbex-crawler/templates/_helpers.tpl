@@ -29,6 +29,6 @@ Stringify and render a map as YAML key: "value" pairs (for metadata.labels)
 */}}
 {{- define "urbex.quotedLabels" -}}
 {{- range $k, $v := . }}
-{{ $k }}: {{ $v | quote }}
+"{{ $k }}": "{{ $v }}"
 {{- end }}
 {{- end }}
