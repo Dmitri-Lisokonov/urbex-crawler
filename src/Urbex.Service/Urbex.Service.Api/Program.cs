@@ -12,7 +12,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         policy
-            .AllowAnyOrigin()    // You can restrict this to your frontend origin
+            .AllowAnyOrigin()   
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -34,6 +34,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers(); // <-- And this
+app.MapControllers(); 
+
 
 app.Run();

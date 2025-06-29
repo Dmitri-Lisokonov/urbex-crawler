@@ -2,7 +2,7 @@ replicaCount: 1
 
 service:
   name: urbex-service
-  image: urbex-service
+  image: homelab.local/urbex-service
   port: 443
   labels:
     security.kubernetes.io/ingress-restriction-scope: "application"
@@ -12,7 +12,7 @@ service:
 
 frontend:
   name: urbex-ui
-  image: urbex-ui
+  image: homelab.local/urbex-ui
   port: 443
   labels:
     security.kubernetes.io/ingress-restriction-scope: "public"

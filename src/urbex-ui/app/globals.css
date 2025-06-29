@@ -24,3 +24,47 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+@keyframes jump-up {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-10%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-jump-up {
+  animation: jump-up 0.4s ease-out forwards;
+}
+
+@keyframes jump-down {
+  0% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.animate-jump-down {
+  animation: jump-down 0.4s ease-in forwards;
+}
+
+@keyframes fade-in-fast {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-fast {
+  animation: fade-in-fast 0.3s ease-out forwards;
+}

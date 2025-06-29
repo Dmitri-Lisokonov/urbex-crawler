@@ -87,8 +87,8 @@ export default function Home() {
   const [showFilters, setShowFilters] = useState(false);
   const [navVisible, setNavVisible] = useState(false);
   const [footerAnimation, setFooterAnimation] = useState<'up' | 'down' | null>(null);
+  const [notification, setNotification] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<Record<string, Set<string>>>(() => {
-
     const defaultState: Record<string, Set<string>> = {};
     FILTER_CATEGORIES.forEach(cat => {
       defaultState[cat.name] = new Set(cat.tags.map(tag => tag.key));
@@ -96,6 +96,8 @@ export default function Home() {
     return defaultState;
   });
 
+  const mainText = loading ? loadingPhrases[phraseIndex] : 'Explore the obscure';
+  const subText = loading ? 'Please wait while we search...' : 'One click. One place.';
 
   useEffect(() => {
     setVisible(true);
@@ -115,50 +117,71 @@ export default function Home() {
     setLoading(true);
     setAnimatedKey((k) => k + 1);
     try {
-      const defaultAll = FILTER_CATEGORIES.reduce((acc, cat) => {
-        acc[cat.name] = cat.tags.map(tag => tag.key);
-        return acc;
-      }, {} as Record<string, string[]>);
+      const tagToPropertyMap: Record<string, string> = {
+        ruins: "Ruins",
+        castle: "Castle",
+        archaeological_site: "ArchaeologicalSite",
+        fort: "Fort",
+        yes: "Abandoned",
+        cave_entrance: "CaveEntrance",
+        spring: "Spring",
+        rock: "Rock",
+        cliff: "Cliff",
+        sinkhole: "Sinkhole",
+        wood: "Wood",
+        forest: "Forest",
+        viewpoint: "Viewpoint",
+        wilderness_hut: "WildernessHut",
+        alpine_hut: "AlpineHut",
+        bunker: "Bunker",
+        tower: "Tower",
+        picnic_site: "PicnicSite",
+        trailhead: "Trailhead",
+        path: "Path",
+      };
 
-      const isModified = Object.keys(defaultAll).some(name =>
-        defaultAll[name].length !== selectedTags[name]?.size
-        || !defaultAll[name].every(key => selectedTags[name]?.has(key))
-      );
+      const payload: Record<string, boolean | number> = {
+        RadiusMeters: radius * 1000,
+      };
 
-      const payload = isModified
-        ? {
-          filters: Object.fromEntries(
-            Object.entries(selectedTags).map(([k, v]) => [k, Array.from(v)])
-          )
+      for (const [category, tagSet] of Object.entries(selectedTags)) {
+        for (const tag of tagSet) {
+          const prop = tagToPropertyMap[tag];
+          if (prop) {
+            payload[prop] = true;
+          }
         }
-        : undefined;
+      }
 
-      const response = await fetch('https://localhost:7188/api/location/random', {
+      const response = await fetch('https://urbex-service/location/random', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: payload ? JSON.stringify(payload) : null,
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) throw new Error('Failed to fetch location');
       const data = await response.json();
       if (data.url) window.location.href = data.url;
-      else alert('No URL received from server');
+      else setNotification('No URL received from server');
     } catch (err) {
       console.error(err);
-      alert('Something went wrong. Check the API status.');
+      setNotification('Something went wrong. Check the API status.');
     } finally {
       setLoading(false);
       setPhraseIndex(0);
+      setTimeout(() => setNotification(null), 4000);
     }
   };
 
 
 
-  const mainText = loading ? loadingPhrases[phraseIndex] : 'Explore the obscure';
-  const subText = loading ? 'Please wait while we search...' : 'One click. One place.';
-
   return (
     <>
+      {notification && (
+        <div className="fixed top-0 w-full bg-red-600 text-white text-center py-2 z-50 font-mono text-sm animate-fade-in-fast">
+          {notification}
+        </div>
+      )}
       <nav className="w-full fixed top-0 left-0 z-50 bg-black/10 backdrop-blur-md border-b border-white px-6 py-4 uppercase tracking-wide text-sm font-mono">
         <div className="flex justify-center items-center gap-3 text-white font-bold">
           <FaBug className="text-xl" />
@@ -350,8 +373,8 @@ export default function Home() {
                           });
                         }}
                         className={`px-2 py-[0.25rem] border rounded text-[10px] uppercase transition ${isSelected
-                            ? 'bg-white text-black border-white'
-                            : 'border-white/20 hover:bg-white hover:text-black'
+                          ? 'bg-white text-black border-white'
+                          : 'border-white/20 hover:bg-white hover:text-black'
                           }`}
                       >
                         {tag.displayName}
@@ -364,11 +387,6 @@ export default function Home() {
           )}
         </div>
       </footer>
-
-
-
-
-
 
       <style jsx global>{`
         @keyframes shake-tiny {
@@ -415,3 +433,4 @@ export default function Home() {
     </>
   );
 }
+

@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+Dockerfile
+*.md
+*.log
+*.ts
+*.tsx
+*.map
+*.env
+.vscode

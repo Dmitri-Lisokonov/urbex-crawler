@@ -13,12 +13,10 @@ public class LocationController : ControllerBase
     private const string OverpassUrl = "https://overpass-api.de/api/interpreter";
     private const string BoundingBox = "(51.1095,4.3669,52.0105,5.8131)";
 
-    public record LocationRequest(Dictionary<string, string[]>? Filters);
-
     [HttpPost("random")]
-    public async Task<IActionResult> PostRandomLocation([FromBody] LocationRequest request)
+    public async Task<IActionResult> GetRandomLocation([FromBody] FilterRequest filters)
     {
-        var filterLines = BuildOverpassQuery(request.Filters);
+        var filterLines = BuildOverpassQuery(filters);
         var query = $"""
                      [out:json][timeout:60];
                      (
@@ -26,7 +24,7 @@ public class LocationController : ControllerBase
                      );
                      out body;
                      """;
-        Console.WriteLine("Generated Overpass Query:\n" + query); // Debug output
+
         var response = await HttpClient.PostAsync(OverpassUrl, new StringContent(query));
         if (!response.IsSuccessStatusCode)
             return StatusCode((int)response.StatusCode, "Overpass API error");
@@ -45,62 +43,100 @@ public class LocationController : ControllerBase
         if (lat == null || lon == null)
             return BadRequest("Invalid location data");
 
-        var googleMapsUrl = $"https://www.google.com/maps?q={lat.Value.ToString(CultureInfo.InvariantCulture)},{lon.Value.ToString(CultureInfo.InvariantCulture)}";
+        var googleMapsUrl =
+            $"https://www.google.com/maps?q={lat.Value.ToString(CultureInfo.InvariantCulture)},{lon.Value.ToString(CultureInfo.InvariantCulture)}";
+
         return Ok(new { url = googleMapsUrl });
     }
 
-    private static string BuildOverpassQuery(Dictionary<string, string[]>? filters)
+    private static string BuildOverpassQuery(FilterRequest f)
     {
-        if (filters == null || filters.Count == 0)
-        {
-            return string.Join(Environment.NewLine, DefaultFilters.Select(f => $"node{f}{BoundingBox};"));
-        }
+        const double lat = 51.56;
+        const double lon = 5.09;
 
-        var lines = new List<string>();
+        var query = new List<string>();
 
-        foreach (var (key, values) in filters)
-        {
-            foreach (var value in values)
-            {
-                if (key == "man_made" && value == "tower")
-                {
-                    lines.Add($"node[\"man_made\"=\"tower\"][\"tower:type\"=\"observation\"]{BoundingBox};");
-                }
-                else if (key == "highway" && value == "path")
-                {
-                    lines.Add($"node[\"highway\"=\"path\"][\"sac_scale\"=\"demanding_mountain_hiking\"]{BoundingBox};");
-                }
-                else
-                {
-                    lines.Add($"node[\"{key}\"=\"{value}\"]{BoundingBox};");
-                }
-            }
-        }
+        string Q(string key, string value) =>
+            $"""node(around:{f.RadiusMeters}, {lat.ToString(CultureInfo.InvariantCulture)}, {lon.ToString(CultureInfo.InvariantCulture)})["{key}"="{value}"];""";
 
-        return string.Join(Environment.NewLine, lines);
+        // Historic
+        if (f.Ruins) query.Add(Q("historic", "ruins"));
+        if (f.Castle) query.Add(Q("historic", "castle"));
+        if (f.ArchaeologicalSite) query.Add(Q("historic", "archaeological_site"));
+        if (f.Fort) query.Add(Q("historic", "fort"));
+
+        // Abandoned
+        if (f.Abandoned) query.Add(Q("abandoned", "yes"));
+
+        // Natural
+        if (f.CaveEntrance) query.Add(Q("natural", "cave_entrance"));
+        if (f.Spring) query.Add(Q("natural", "spring"));
+        if (f.Rock) query.Add(Q("natural", "rock"));
+        if (f.Cliff) query.Add(Q("natural", "cliff"));
+        if (f.Sinkhole) query.Add(Q("natural", "sinkhole"));
+        if (f.Wood) query.Add(Q("natural", "wood"));
+
+        // Landuse
+        if (f.Forest) query.Add(Q("landuse", "forest"));
+
+        // Tourism
+        if (f.Viewpoint) query.Add(Q("tourism", "viewpoint"));
+        if (f.WildernessHut) query.Add(Q("tourism", "wilderness_hut"));
+        if (f.AlpineHut) query.Add(Q("tourism", "alpine_hut"));
+
+        // Man made
+        if (f.Bunker) query.Add(Q("man_made", "bunker"));
+        if (f.Tower) query.Add($"""node(around:{f.RadiusMeters}, {lat.ToString(CultureInfo.InvariantCulture)}, {lon.ToString(CultureInfo.InvariantCulture)})["man_made"="tower"]["tower:type"="observation"];""");
+
+        // Leisure
+        if (f.PicnicSite) query.Add(Q("leisure", "picnic_site"));
+
+        // Highway
+        if (f.Trailhead) query.Add(Q("highway", "trailhead"));
+        if (f.Path) query.Add($"""node(around:{f.RadiusMeters}, {lat.ToString(CultureInfo.InvariantCulture)}, {lon.ToString(CultureInfo.InvariantCulture)})["highway"="path"]["sac_scale"="demanding_mountain_hiking"];""");
+
+        return string.Join('\n', query);
     }
 
-    private static readonly string[] DefaultFilters =
-    [
-        "[\"historic\"=\"ruins\"]",
-        "[\"historic\"=\"castle\"]",
-        "[\"historic\"=\"archaeological_site\"]",
-        "[\"historic\"=\"fort\"]",
-        "[\"abandoned\"=\"yes\"]",
-        "[\"natural\"=\"cave_entrance\"]",
-        "[\"natural\"=\"spring\"]",
-        "[\"natural\"=\"rock\"]",
-        "[\"natural\"=\"cliff\"]",
-        "[\"natural\"=\"sinkhole\"]",
-        "[\"natural\"=\"wood\"]",
-        "[\"landuse\"=\"forest\"]",
-        "[\"tourism\"=\"viewpoint\"]",
-        "[\"man_made\"=\"bunker\"]",
-        "[\"man_made\"=\"tower\"][\"tower:type\"=\"observation\"]",
-        "[\"tourism\"=\"wilderness_hut\"]",
-        "[\"tourism\"=\"alpine_hut\"]",
-        "[\"leisure\"=\"picnic_site\"]",
-        "[\"highway\"=\"trailhead\"]",
-        "[\"highway\"=\"path\"][\"sac_scale\"=\"demanding_mountain_hiking\"]"
-    ];
+
+    public class FilterRequest
+    {
+        public int RadiusMeters { get; set; } = 50000; // default to 50 km
+
+        // Historic
+        public bool Ruins { get; set; }
+        public bool Castle { get; set; }
+        public bool ArchaeologicalSite { get; set; }
+        public bool Fort { get; set; }
+
+        // Abandoned
+        public bool Abandoned { get; set; }
+
+        // Natural
+        public bool CaveEntrance { get; set; }
+        public bool Spring { get; set; }
+        public bool Rock { get; set; }
+        public bool Cliff { get; set; }
+        public bool Sinkhole { get; set; }
+        public bool Wood { get; set; }
+
+        // Landuse
+        public bool Forest { get; set; }
+
+        // Tourism
+        public bool Viewpoint { get; set; }
+        public bool WildernessHut { get; set; }
+        public bool AlpineHut { get; set; }
+
+        // Man made
+        public bool Bunker { get; set; }
+        public bool Tower { get; set; }
+
+        // Leisure
+        public bool PicnicSite { get; set; }
+
+        // Highway
+        public bool Trailhead { get; set; }
+        public bool Path { get; set; }
+    }
 }
