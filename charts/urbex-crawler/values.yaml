@@ -24,11 +24,11 @@ ingress:
   enabled: true
   annotations: {}
   hosts:
-    - host: urbexcrawler.home.codesty.dev
+    - host: urbexcrawler.codesty.dev
       paths:
         - path: /
           pathType: Prefix
   tls:
     - hosts:
-        - urbexcrawler.home.codesty.dev
+        - urbexcrawler.codesty.dev
       secretName: urbexcrawler-tls
