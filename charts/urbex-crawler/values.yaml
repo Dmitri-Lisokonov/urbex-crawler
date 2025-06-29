@@ -32,3 +32,4 @@ ingress:
   tls:
     - hosts:
         - urbexcrawler.codesty.dev
+      secretName: urbexcrawler-tls
