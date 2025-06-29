@@ -13,7 +13,7 @@ service:
 frontend:
   name: urbex-ui
   image: homelab.local/urbex-ui
-  port: 443
+  port: 3000
   labels:
     security.kubernetes.io/ingress-restriction-scope: "public"
     security.kubernetes.io/egress-restriction-scope: "application"
