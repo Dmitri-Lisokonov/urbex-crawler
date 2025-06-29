@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ .Values.service.name }}
   labels:
-    app: {{ .Values.service.name }}
+    {{- include "urbex.labels" . | nindent 4 }}
     {{- with .Values.service.labels }}
     {{ toYaml . | nindent 4 }}
     {{- end }}
@@ -15,8 +15,11 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ .Values.service.name }}
+        {{- include "urbex.labels" . | nindent 8 }}
         {{- with .Values.service.labels }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.service.securityLabels }}
         {{ toYaml . | nindent 8 }}
         {{- end }}
     spec:
@@ -31,7 +34,7 @@ kind: Deployment
 metadata:
   name: {{ .Values.frontend.name }}
   labels:
-    app: {{ .Values.frontend.name }}
+    {{- include "urbex.labels" . | nindent 4 }}
     {{- with .Values.frontend.labels }}
     {{ toYaml . | nindent 4 }}
     {{- end }}
@@ -43,8 +46,11 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ .Values.frontend.name }}
+        {{- include "urbex.labels" . | nindent 8 }}
         {{- with .Values.frontend.labels }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.frontend.securityLabels }}
         {{ toYaml . | nindent 8 }}
         {{- end }}
     spec:
