@@ -23,7 +23,9 @@ frontend:
 ingress:
   enabled: true
   annotations:
-        cert-manager.io/cluster-issuer: selfsigned-issuer 
+    cert-manager.io/common-name: urbexcrawler.codesty.dev
+    cert-manager.io/secret-name: urbexcrawler-tls   
+      cert-manager.io/cluster-issuer: selfsigned-issuer 
   hosts:
     - host: urbexcrawler.codesty.dev
       paths:
