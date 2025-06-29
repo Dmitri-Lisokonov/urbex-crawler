@@ -5,24 +5,20 @@ service:
   image: urbex-service
   port: 443
   labels:
-    component: backend
-    tier: api
-    security.kubernetes.io/ingress-restriction-scope: application
-    security.kubernetes.io/egress-restriction-scope: public
-    app.kubernetes.io/component: backend
-    app.kubernetes.io/part-of: urbex-crawler
+    security.kubernetes.io/ingress-restriction-scope: "application"
+    security.kubernetes.io/egress-restriction-scope: "public"
+    app.kubernetes.io/component: "backend"
+    app.kubernetes.io/part-of: "urbex-crawler"
 
 frontend:
   name: urbex-ui
   image: urbex-ui
   port: 443
   labels:
-    component: frontend
-    tier: ui
-    security.kubernetes.io/ingress-restriction-scope: public
-    security.kubernetes.io/egress-restriction-scope: application
-    app.kubernetes.io/component: frontend
-    app.kubernetes.io/part-of: urbex-crawler
+    security.kubernetes.io/ingress-restriction-scope: "public"
+    security.kubernetes.io/egress-restriction-scope: "application"
+    app.kubernetes.io/component: "frontend"
+    app.kubernetes.io/part-of: "urbex-crawler"
 
 ingress:
   enabled: true
