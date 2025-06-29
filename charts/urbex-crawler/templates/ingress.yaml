@@ -23,7 +23,7 @@ spec:
               service:
                 name: {{ $.Values.frontend.name }}
                 port:
-                  number: 80
+                  number: 3000
           {{- end }}
     {{- end }}
   {{- if .Values.ingress.tls }}
