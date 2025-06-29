@@ -1,6 +1,3 @@
-Here is your corrected Helm deployment template with the missing `app` label explicitly added to the `template.metadata.labels` section in both deployments:
-
-```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -64,4 +61,3 @@ spec:
           image: {{ .Values.frontend.image }}
           ports:
             - containerPort: {{ .Values.frontend.port }}
-```
