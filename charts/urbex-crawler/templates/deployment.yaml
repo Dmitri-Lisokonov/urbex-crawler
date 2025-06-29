@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "urbex.labels" . | nindent 4 }}
     {{- with .Values.service.labels }}
-    {{ toYaml . | nindent 4 }}
+    {{ include "urbex.quotedLabels" . | nindent 4 }}
     {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
@@ -17,10 +17,10 @@ spec:
       labels:
         {{- include "urbex.labels" . | nindent 8 }}
         {{- with .Values.service.labels }}
-        {{ toYaml . | nindent 8 }}
+        {{ include "urbex.quotedLabels" . | nindent 8 }}
         {{- end }}
         {{- with .Values.service.securityLabels }}
-        {{ toYaml . | nindent 8 }}
+        {{ include "urbex.quotedLabels" . | nindent 8 }}
         {{- end }}
     spec:
       containers:
@@ -36,7 +36,7 @@ metadata:
   labels:
     {{- include "urbex.labels" . | nindent 4 }}
     {{- with .Values.frontend.labels }}
-    {{ toYaml . | nindent 4 }}
+    {{ include "urbex.quotedLabels" . | nindent 4 }}
     {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
@@ -48,10 +48,10 @@ spec:
       labels:
         {{- include "urbex.labels" . | nindent 8 }}
         {{- with .Values.frontend.labels }}
-        {{ toYaml . | nindent 8 }}
+        {{ include "urbex.quotedLabels" . | nindent 8 }}
         {{- end }}
         {{- with .Values.frontend.securityLabels }}
-        {{ toYaml . | nindent 8 }}
+        {{ include "urbex.quotedLabels" . | nindent 8 }}
         {{- end }}
     spec:
       containers:
