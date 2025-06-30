@@ -23,7 +23,7 @@ frontend:
 ingress:
   enabled: true
   annotations:
-    cert-manager.io/cluster-issuer: selfsigned-issuer 
+    cert-manager.io/cluster-issuer: letsencrypt-dev
   hosts:
     - host: urbexcrawler.codesty.dev
       paths:
