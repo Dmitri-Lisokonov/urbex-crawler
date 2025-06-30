@@ -29,7 +29,7 @@ frontend:
 backend:
   ingress:
     enabled: true
-    host: api-urbexcrawler.codesty.dev
+    host: api.urbexcrawler.codesty.dev
     tlsSecretName: urbexcrawler-backend-tls
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-dev

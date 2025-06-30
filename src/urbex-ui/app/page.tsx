@@ -78,7 +78,7 @@ const FILTER_CATEGORIES = [
 
 
 export default function Home() {
-  const url = 'https://localhost:7188/api/location/random';
+  const url = 'https://urbex-service/location/random';
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const [phraseIndex, setPhraseIndex] = useState(0);
