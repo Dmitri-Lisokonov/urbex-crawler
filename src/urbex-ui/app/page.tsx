@@ -78,7 +78,7 @@ const FILTER_CATEGORIES = [
 
 
 export default function Home() {
-  const url = 'https://urbexcrawler.codesty.dev/location/random';
+  const url = 'https://api.urbexcrawler.codesty.dev/api/location/random';
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const [phraseIndex, setPhraseIndex] = useState(0);

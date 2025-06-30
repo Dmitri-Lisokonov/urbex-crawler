@@ -12,7 +12,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         policy
-            .AllowAnyOrigin()   
+            .WithOrigins("https://urbexcrawler.codesty.dev")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -23,7 +23,7 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-app.UseCors();
+
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
@@ -31,8 +31,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseCors();
 
 app.MapControllers(); 
 
