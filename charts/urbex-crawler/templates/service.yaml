@@ -7,7 +7,7 @@ spec:
     app: {{ .Values.service.name }}
   ports:
     - protocol: TCP
-      port: 443
+      port: 80
       targetPort: {{ .Values.service.port }}
 ---
 apiVersion: v1
@@ -19,5 +19,5 @@ spec:
     app: {{ .Values.frontend.name }}
   ports:
     - protocol: TCP
-      port: 443
+      port: 80
       targetPort: {{ .Values.frontend.port }}
