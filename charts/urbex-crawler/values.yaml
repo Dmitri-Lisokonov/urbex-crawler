@@ -22,7 +22,6 @@ frontend:
   ingress:
     enabled: true
     host: urbexcrawler.codesty.dev
-    className: traefik
     tlsSecretName: urbexcrawler-tls
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-dev
@@ -31,7 +30,6 @@ backend:
   ingress:
     enabled: true
     host: api.urbexcrawler.codesty.dev
-    className: traefik
     tlsSecretName: urbexcrawler-backend-tls
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-dev
