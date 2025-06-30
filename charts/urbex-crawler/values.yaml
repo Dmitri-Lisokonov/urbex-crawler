@@ -3,7 +3,7 @@ replicaCount: 1
 service:
   name: urbex-service
   image: homelab.local/urbex-service
-  port: 80
+  port: 443
   labels:
     security.kubernetes.io/ingress-restriction-scope: "application"
     security.kubernetes.io/egress-restriction-scope: "public"
@@ -13,7 +13,7 @@ service:
 frontend:
   name: urbex-ui
   image: homelab.local/urbex-ui
-  port: 80
+  port: 443
   labels:
     security.kubernetes.io/ingress-restriction-scope: "public"
     security.kubernetes.io/egress-restriction-scope: "application"
@@ -29,3 +29,7 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+  tls:
+    - hosts:
+        - urbexcrawler.codesty.dev
+      secretName: urbexcrawler-tls
