@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FaBug } from 'react-icons/fa';
 import { IoFilterSharp } from "react-icons/io5";
+import { FiAlertCircle } from 'react-icons/fi';
 
 const loadingPhrases = [
   'Scanning the shadows...',
@@ -77,6 +78,7 @@ const FILTER_CATEGORIES = [
 
 
 export default function Home() {
+  const url = 'https://localhost:7188/api/location/random';
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const [phraseIndex, setPhraseIndex] = useState(0);
@@ -88,6 +90,7 @@ export default function Home() {
   const [navVisible, setNavVisible] = useState(false);
   const [footerAnimation, setFooterAnimation] = useState<'up' | 'down' | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
+  const [notificationVisible, setNotificationVisible] = useState(false);
   const [selectedTags, setSelectedTags] = useState<Record<string, Set<string>>>(() => {
     const defaultState: Record<string, Set<string>> = {};
     FILTER_CATEGORIES.forEach(cat => {
@@ -95,6 +98,15 @@ export default function Home() {
     });
     return defaultState;
   });
+
+  const showNotification = (msg: string) => {
+    setNotification(msg);
+    setNotificationVisible(true);
+    setTimeout(() => {
+      setNotificationVisible(false); // triggers fade-out
+      setTimeout(() => setNotification(null), 300); // unmount after animation ends
+    }, 4000);
+  };
 
   const mainText = loading ? loadingPhrases[phraseIndex] : 'Explore the obscure';
   const subText = loading ? 'Please wait while we search...' : 'One click. One place.';
@@ -153,7 +165,7 @@ export default function Home() {
         }
       }
 
-      const response = await fetch('https://urbex-service/location/random', {
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -165,7 +177,12 @@ export default function Home() {
       else setNotification('No URL received from server');
     } catch (err) {
       console.error(err);
-      setNotification('Something went wrong. Check the API status.');
+      showNotification('Something went wrong. Check the API status.');
+      setNotificationVisible(true);
+      setTimeout(() => {
+        setNotificationVisible(false);
+        setTimeout(() => setNotification(null), 300); // wait for fade-out before unmount
+      }, 4000);
     } finally {
       setLoading(false);
       setPhraseIndex(0);
@@ -178,10 +195,18 @@ export default function Home() {
   return (
     <>
       {notification && (
-        <div className="fixed top-0 w-full bg-red-600 text-white text-center py-2 z-50 font-mono text-sm animate-fade-in-fast">
-          {notification}
+        <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-xl px-4">
+          <div
+            className={`w-full border border-white bg-black/10 backdrop-blur-md px-6 py-3 text-white text-sm font-mono uppercase tracking-wide shadow-lg flex items-center gap-3 ${notificationVisible ? 'animate-fade-slide-in' : 'animate-fade-slide-out'
+              }`}
+          >
+            <FiAlertCircle className="text-lg text-white/80" />
+            <span>{notification}</span>
+          </div>
         </div>
       )}
+
+
       <nav className="w-full fixed top-0 left-0 z-50 bg-black/10 backdrop-blur-md border-b border-white px-6 py-4 uppercase tracking-wide text-sm font-mono">
         <div className="flex justify-center items-center gap-3 text-white font-bold">
           <FaBug className="text-xl" />
@@ -363,13 +388,23 @@ export default function Home() {
                     const isSelected = selectedTags[category.name]?.has(tag.key);
                     return (
                       <button
-                        key={`${category.name}-${tag.key}`}
+                        key={`${category.name}-${tag.key}-${isSelected ? 'on' : 'off'}`}
                         onClick={() => {
-                          setSelectedTags((prev) => {
-                            const updated = new Set(prev[category.name]);
-                            if (updated.has(tag.key)) updated.delete(tag.key);
-                            else updated.add(tag.key);
-                            return { ...prev, [category.name]: updated };
+                          setSelectedTags(prev => {
+                            const currentSet = prev[category.name];
+                            const nextSet = new Set(currentSet); // clone to avoid mutation
+
+                            if (currentSet.has(tag.key)) {
+                              nextSet.delete(tag.key);
+                            } else {
+                              nextSet.add(tag.key);
+                            }
+
+                            // Fully construct a new object to trigger re-render
+                            return {
+                              ...prev,
+                              [category.name]: nextSet
+                            };
                           });
                         }}
                         className={`px-2 py-[0.25rem] border rounded text-[10px] uppercase transition ${isSelected
