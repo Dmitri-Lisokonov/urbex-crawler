@@ -21,7 +21,7 @@ spec:
               service:
                 name: {{ .Values.service.name }}
                 port:
-                  number: 443
+                  number: 80
   tls:
     - hosts:
         - {{ .Values.backend.ingress.host }}
