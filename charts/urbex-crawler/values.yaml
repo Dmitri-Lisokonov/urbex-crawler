@@ -3,7 +3,7 @@ replicaCount: 1
 service:
   name: urbex-service
   image: homelab.local/urbex-service
-  port: 7188
+  port: 8080
   labels:
     security.kubernetes.io/ingress-restriction-scope: "application"
     security.kubernetes.io/egress-restriction-scope: "public"
